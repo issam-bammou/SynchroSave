@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\games.json" LogicalName="SynchroSave.Core.games.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="SynchroSave.Tests" />
+  </ItemGroup>
+</Project>

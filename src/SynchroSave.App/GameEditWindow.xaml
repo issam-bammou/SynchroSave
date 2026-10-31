@@ -1,0 +1,23 @@
+<Window x:Class="SynchroSave.App.GameEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Jeu" Width="620" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        FontFamily="Segoe UI" FontSize="13">
+    <StackPanel Margin="16">
+        <TextBlock Text="Choisir un jeu connu (facultatif) :"/>
+        <ComboBox x:Name="KnownCombo" Margin="0,4,0,10" DisplayMemberPath="Name" SelectionChanged="KnownCombo_SelectionChanged" IsEditable="False"/>
+        <TextBlock Text="Nom du jeu :"/>
+        <TextBox x:Name="NameBox" Margin="0,4,0,10"/>
+        <TextBlock Text="Dossier contenant les sauvegardes :"/>
+        <DockPanel Margin="0,4,0,4">
+            <Button DockPanel.Dock="Right" Content="Parcourir…" Margin="8,0,0,0" Click="Browse_Click"/>
+            <TextBox x:Name="PathBox"/>
+        </DockPanel>
+        <TextBlock Style="{StaticResource Hint}" Text="Astuce : la plupart des jeux enregistrent dans Documents, dans « Parties enregistrées » (Saved Games) ou dans %APPDATA% / %LOCALAPPDATA%. Les variables comme %APPDATA% sont acceptées."/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Style="{StaticResource PrimaryButton}" Content="OK" Width="90" IsDefault="True" Click="Ok_Click"/>
+            <Button Content="Annuler" Width="90" IsCancel="True" Margin="0"/>
+        </StackPanel>
+    </StackPanel>
+</Window>
