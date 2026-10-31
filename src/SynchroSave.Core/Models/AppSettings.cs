@@ -45,6 +45,12 @@ public sealed class AppSettings
     /// <summary>Nom de ce PC tel qu'il apparaît dans OneDrive.</summary>
     public string MachineName { get; set; } = Environment.MachineName;
 
+    /// <summary>Utiliser la base communautaire en ligne des emplacements de sauvegarde (PCGamingWiki / Ludusavi).</summary>
+    public bool OnlineDatabaseEnabled { get; set; } = true;
+
+    /// <summary>Vérifier les mises à jour de la base en ligne tous les N jours.</summary>
+    public int OnlineDatabaseUpdateDays { get; set; } = 7;
+
     public bool FirstRunCompleted { get; set; }
 
     public List<GameEntry> Games { get; set; } = new();

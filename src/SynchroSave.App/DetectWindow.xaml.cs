@@ -21,8 +21,8 @@ public sealed class CandidateRow : Observable
     {
         Candidate = c;
         _name = c.Name;
-        // Les dossiers globaux (Steam userdata, My Games entier…) ne sont pas cochés d'office.
-        _selected = !c.Reason.StartsWith("Dossier global", StringComparison.Ordinal);
+        // Les dossiers globaux ou volumineux ne sont pas cochés d'office.
+        _selected = c.Preselect;
     }
 
     public SaveCandidate Candidate { get; }
@@ -57,6 +57,9 @@ public partial class DetectWindow : Window
         List<SaveCandidate> candidates;
         try
         {
+            var progress = new Progress<string>(m => StatusText.Text = m);
+            await App.Service.EnsureOnlineDatabaseAsync(progress);
+            StatusText.Text = $"Analyse en cours… ({App.Service.Catalog.Definitions.Count:N0} jeux connus + recherche dans les dossiers)";
             AppSettings settings;
             lock (App.Service.Gate) settings = new AppSettings { Games = App.Service.Settings.Games.ToList() };
             candidates = await Task.Run(() => App.Service.Catalog.FindNewCandidates(settings, _cts.Token));
@@ -75,9 +78,12 @@ public partial class DetectWindow : Window
 
         AddButton.IsEnabled = _rows.Count > 0;
         var known = candidates.Count(c => c.KnownGameId != null);
+        var onlineHint = App.Service.Settings.OnlineDatabaseEnabled && App.Service.Catalog.OnlineCount == 0
+            ? "  ⚠ Base en ligne non disponible (pas d'internet ?) : seule la base intégrée a été utilisée."
+            : "";
         StatusText.Text = _rows.Count == 0
             ? "Aucun nouveau dossier de sauvegarde trouvé. Tous vos jeux détectables sont déjà suivis. Pour un jeu qui enregistre ailleurs (ex. dans son dossier d'installation), utilisez « Ajouter un jeu / dossier »."
-            : $"{_rows.Count} dossier(s) trouvé(s) : {known} jeu(x) connu(s) et {_rows.Count - known} trouvé(s) par analyse. Décochez ce qui n'est pas une sauvegarde de jeu.";
+            : $"{_rows.Count} dossier(s) trouvé(s) : {known} jeu(x) connu(s) et {_rows.Count - known} trouvé(s) par analyse. Décochez ce qui n'est pas une sauvegarde de jeu." + onlineHint;
     }
 
     private void All_Click(object sender, RoutedEventArgs e)

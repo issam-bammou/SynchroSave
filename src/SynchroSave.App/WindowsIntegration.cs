@@ -108,6 +108,34 @@ internal static class WindowsIntegration
         return OneDriveLocator.Detect(candidates);
     }
 
+    /// <summary>Dossiers d'installation déclarés dans le registre (GOG Galaxy, Ubisoft, EA).</summary>
+    public static IEnumerable<string> ExtraInstallRoots()
+    {
+        var result = new List<string>();
+        void FromSubKeys(RegistryKey hive, string path, string valueName, bool parent)
+        {
+            try
+            {
+                using var key = hive.OpenSubKey(path);
+                if (key == null) return;
+                foreach (var name in key.GetSubKeyNames())
+                {
+                    using var sub = key.OpenSubKey(name);
+                    if (sub?.GetValue(valueName) is string p && p.Length > 3)
+                    {
+                        var dir = parent ? Path.GetDirectoryName(p.TrimEnd('\\')) : p;
+                        if (!string.IsNullOrEmpty(dir)) result.Add(dir);
+                    }
+                }
+            }
+            catch { /* ignore */ }
+        }
+        FromSubKeys(Registry.LocalMachine, @"SOFTWARE\WOW6432Node\GOG.com\Games", "path", parent: true);
+        FromSubKeys(Registry.LocalMachine, @"SOFTWARE\WOW6432Node\Ubisoft\Launcher\Installs", "InstallDir", parent: true);
+        FromSubKeys(Registry.LocalMachine, @"SOFTWARE\WOW6432Node\EA Games", "Install Dir", parent: true);
+        return result;
+    }
+
     /// <summary>Jetons de chemin enrichis avec les vraies valeurs Windows (dossier Saved Games, Steam).</summary>
     public static Dictionary<string, string> BuildTokens()
     {

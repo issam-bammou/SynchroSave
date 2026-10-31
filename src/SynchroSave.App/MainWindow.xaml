@@ -189,6 +189,18 @@
                             <TextBox x:Name="ExcludeBox" Width="360"/>
                         </StackPanel>
 
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Base de jeux en ligne"/>
+                        <CheckBox x:Name="OnlineDbCheck" Content="Utiliser la base en ligne des emplacements de sauvegarde (PCGamingWiki / Ludusavi, environ 20 000 jeux)"/>
+                        <StackPanel Orientation="Horizontal" Margin="22,4,0,4">
+                            <TextBlock Text="Vérifier les mises à jour tous les" VerticalAlignment="Center"/>
+                            <TextBox x:Name="OnlineDaysBox" Width="50" Margin="8,0" HorizontalContentAlignment="Right"/>
+                            <TextBlock Text="jours" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="22,4,0,4">
+                            <Button x:Name="UpdateOnlineButton" Content="⟳ Mettre à jour maintenant" Click="UpdateOnline_Click"/>
+                            <TextBlock x:Name="OnlineStatusText" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{StaticResource Subtle}"/>
+                        </StackPanel>
+
                         <TextBlock Style="{StaticResource SectionTitle}" Text="Windows"/>
                         <CheckBox x:Name="StartWithWindowsCheck" Content="Lancer SynchroSave automatiquement au démarrage du PC (à l'ouverture de votre session Windows)"/>
                         <TextBlock x:Name="StartupStatusText" Margin="22,0,0,4" TextWrapping="Wrap"/>

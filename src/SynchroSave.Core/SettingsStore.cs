@@ -42,6 +42,7 @@ public sealed class SettingsStore
         s.VersionsToKeep = Math.Clamp(s.VersionsToKeep, 0, 500);
         s.LocalSafetyBackupsToKeep = Math.Clamp(s.LocalSafetyBackupsToKeep, 0, 100);
         s.SyncOnChangeDelaySeconds = Math.Clamp(s.SyncOnChangeDelaySeconds, 5, 3600);
+        s.OnlineDatabaseUpdateDays = Math.Clamp(s.OnlineDatabaseUpdateDays, 1, 365);
         if (string.IsNullOrWhiteSpace(s.CloudFolderName)) s.CloudFolderName = "SynchroSave";
         if (string.IsNullOrWhiteSpace(s.MachineName)) s.MachineName = Environment.MachineName;
         s.Games ??= new List<GameEntry>();

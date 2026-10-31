@@ -17,10 +17,15 @@ public sealed class GameCatalog
 {
     private readonly PathResolver _resolver;
 
+    private readonly List<GameDefinition> _local;
+    private List<GameDefinition> _all;
+    private readonly object _gate = new();
+
     public GameCatalog(PathResolver resolver, string? customDatabaseFile = null)
     {
         _resolver = resolver;
-        Definitions = LoadBuiltIn();
+        _local = LoadBuiltIn();
+        foreach (var d in _local) d.Source = "Jeu connu";
         if (customDatabaseFile != null && File.Exists(customDatabaseFile))
         {
             try
@@ -28,8 +33,9 @@ public sealed class GameCatalog
                 var custom = JsonSerializer.Deserialize<List<GameDefinition>>(File.ReadAllText(customDatabaseFile), JsonFile.Options) ?? new();
                 foreach (var c in custom.Where(c => !string.IsNullOrWhiteSpace(c.Id)))
                 {
-                    Definitions.RemoveAll(d => d.Id.Equals(c.Id, StringComparison.OrdinalIgnoreCase));
-                    Definitions.Add(c);
+                    _local.RemoveAll(d => d.Id.Equals(c.Id, StringComparison.OrdinalIgnoreCase));
+                    c.Source = "Base perso";
+                    _local.Add(c);
                 }
             }
             catch (Exception ex)
@@ -37,9 +43,40 @@ public sealed class GameCatalog
                 AppLog.Warn($"Base de jeux personnalisée ignorée ({customDatabaseFile}) : {ex.Message}");
             }
         }
+        _all = _local.ToList();
     }
 
-    public List<GameDefinition> Definitions { get; }
+    /// <summary>Toutes les définitions : base intégrée/perso puis base en ligne.</summary>
+    public List<GameDefinition> Definitions
+    {
+        get { lock (_gate) return _all; }
+    }
+
+    public int OnlineCount { get; private set; }
+
+    /// <summary>Ajoute la base en ligne ; la base intégrée et la base perso restent prioritaires.</summary>
+    public void SetOnlineDefinitions(IEnumerable<GameDefinition> online)
+    {
+        var ids = _local.Select(d => d.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var names = _local.Select(d => NormalizeName(d.Name)).ToHashSet();
+        var merged = _local.ToList();
+        var count = 0;
+        foreach (var d in online)
+        {
+            if (ids.Contains(d.Id) || names.Contains(NormalizeName(d.Name))) continue;
+            d.Source = "Base en ligne (PCGamingWiki)";
+            merged.Add(d);
+            ids.Add(d.Id);
+            count++;
+        }
+        lock (_gate)
+        {
+            _all = merged;
+            OnlineCount = count;
+        }
+    }
+
+    private static string NormalizeName(string n) => Slug(n).Replace("-", "");
 
     private static List<GameDefinition> LoadBuiltIn()
     {
@@ -51,16 +88,21 @@ public sealed class GameCatalog
     /// <summary>Jeux de la base dont le dossier de sauvegarde existe sur ce PC.</summary>
     public List<DetectedGame> Detect()
     {
+        _resolver.RefreshInstallRoots();
         var found = new List<DetectedGame>();
         foreach (var def in Definitions)
         {
+            // Plusieurs emplacements existants : on préfère celui qui ressemble à un dossier de sauvegarde.
+            DetectedGame? best = null;
             foreach (var template in def.Paths)
             {
                 var path = _resolver.ResolveExisting(template).FirstOrDefault();
                 if (path == null) continue;
-                found.Add(new DetectedGame { Definition = def, LocalPath = path, PathTemplate = template });
-                break;
+                var candidate = new DetectedGame { Definition = def, LocalPath = path, PathTemplate = template };
+                if (best == null) best = candidate;
+                if (template.Contains("save", StringComparison.OrdinalIgnoreCase)) { best = candidate; break; }
             }
+            if (best != null) found.Add(best);
         }
         return found.OrderBy(f => f.Definition.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
     }
@@ -101,17 +143,25 @@ public sealed class GameCatalog
         {
             if (tracked.Any(g => g.Id.Equals(d.Definition.Id, StringComparison.OrdinalIgnoreCase))) continue;
             if (SaveFolderScanner.IsAlreadyTracked(d.LocalPath, tracked)) continue;
+            if (result.Any(r => string.Equals(r.Path, d.LocalPath, StringComparison.OrdinalIgnoreCase))) continue;
+            if (ct.IsCancellationRequested) break;
             var files = FileScanner.Scan(d.LocalPath);
+            if (files.Count == 0) continue; // dossier présent mais aucune sauvegarde
+            var size = files.Sum(f => f.Size);
+            var big = files.Count > 5000 || size > 1024L * 1024 * 1024;
             result.Add(new SaveCandidate
             {
                 Name = d.Definition.Name,
                 Path = d.LocalPath,
                 Template = d.PathTemplate,
-                Reason = d.Definition.AutoEnable ? "Jeu connu" : "Dossier global (volumineux)",
+                Reason = !d.Definition.AutoEnable ? "Dossier global (volumineux)"
+                    : big ? d.Definition.Source + " — volumineux, à vérifier"
+                    : d.Definition.Source,
                 KnownGameId = d.Definition.Id,
                 FileCount = files.Count,
-                Size = files.Sum(f => f.Size),
-                LastWriteUtc = files.Count == 0 ? null : files.Max(f => f.LastWriteUtc),
+                Size = size,
+                LastWriteUtc = files.Max(f => f.LastWriteUtc),
+                Preselect = d.Definition.AutoEnable && !big,
             });
         }
 

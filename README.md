@@ -5,13 +5,17 @@ et permet de **les récupérer en quelques clics sur un autre PC**.
 
 ## Fonctionnalités
 
-- **Détection automatique** en deux temps :
-  - une base de ~70 jeux connus (Elden Ring, Skyrim, Witcher 3, Cyberpunk 2077, Baldur's Gate 3, EA SPORTS FC 24–27,
-    Stardew Valley, Hollow Knight, Minecraft, RDR2, Hogwarts Legacy…) ;
-  - une **analyse des dossiers** `AppData\Local`, `Roaming`, `LocalLow`, `Documents`, `My Games` et `Saved Games` qui repère
-    les sauvegardes des jeux absents de la base : schéma Unreal Engine `<Jeu>\Saved\SaveGames`, dossiers `Saves`, `SaveData`…,
-    fichiers `.sav`, `.sl2`, `.ess`, `.es3`… Les dossiers trouvés sont proposés dans une liste à cocher (nom modifiable).
-  - et l'ajout de **n'importe quel dossier** à la main.
+- **Détection automatique** très complète :
+  - la **base en ligne PCGamingWiki** (manifeste [Ludusavi](https://github.com/mtkennerly/ludusavi-manifest)) :
+    environ **20 000 jeux** avec leurs emplacements de sauvegarde, téléchargée par l'application et mise à jour
+    automatiquement (tous les 7 jours par défaut, ou bouton « Mettre à jour maintenant ») ;
+  - les sauvegardes **dans les dossiers d'installation** des jeux : bibliothèques Steam sur tous les disques,
+    Epic Games, GOG, Ubisoft, EA, Xbox, dossiers `Games` / `Jeux` à la racine de chaque disque ;
+  - les sauvegardes **Xbox Game Pass / Microsoft Store** (`AppData\Local\Packages\…\SystemAppData\wgs`) ;
+  - une base intégrée (~70 jeux) qui fonctionne sans internet ;
+  - une **analyse des dossiers** `AppData\Local`, `Roaming`, `LocalLow`, `Documents`, `My Games` et `Saved Games` pour les jeux
+    absents des bases : schéma Unreal Engine `<Jeu>\Saved\SaveGames`, dossiers `Saves`, `SaveData`…, fichiers `.sav`, `.sl2`, `.es3`… ;
+  - le tout proposé dans une liste à cocher (nom modifiable, taille, date) ; et l'ajout manuel de **n'importe quel dossier**.
 - **Synchro automatique PC → OneDrive** avec une **fréquence réglable** (de 1 minute à 24 heures, raccourcis 5 min / 15 min / 30 min / 1 h / 6 h / 24 h).
 - **Synchro dès qu'une sauvegarde change** (après un délai réglable sans nouvelle écriture, pour attendre la fin de la sauvegarde du jeu).
 - **Restauration sur un nouveau PC** : l'onglet « Restaurer depuis OneDrive » liste toutes les sauvegardes présentes dans OneDrive
@@ -90,9 +94,14 @@ Créez `%LOCALAPPDATA%\SynchroSave\games.custom.json` :
 Jetons disponibles : `{UserProfile}`, `{Documents}`, `{AppData}`, `{LocalAppData}`, `{LocalLow}`, `{SavedGames}`,
 `{ProgramData}`, `{PublicDocuments}`, `{ProgramFiles}`, `{ProgramFilesX86}`, `{Steam}`, les variables `%VAR%`, et `*` dans un segment.
 
+## Crédits
+
+Emplacements de sauvegarde : [PCGamingWiki](https://www.pcgamingwiki.com) (CC BY-NC-SA 3.0), via le manifeste
+[Ludusavi](https://github.com/mtkennerly/ludusavi-manifest). La base est téléchargée par l'application, elle n'est pas incluse dans le dépôt.
+
 ## Données de l'application
 
-`%LOCALAPPDATA%\SynchroSave\` : `settings.json`, `state\` (dernier état synchronisé par jeu), `LocalBackups\` (copies de sécurité), `logs\`.
+`%LOCALAPPDATA%\SynchroSave\` : `settings.json`, `online\` (base de jeux en ligne), `state\` (dernier état synchronisé par jeu), `LocalBackups\` (copies de sécurité), `logs\`.
 
 ## Structure du code
 

@@ -16,6 +16,8 @@ public sealed class SaveCandidate
     public DateTime? LastWriteUtc { get; init; }
     /// <summary>Id de la base de jeux si le dossier correspond à un jeu connu.</summary>
     public string? KnownGameId { get; init; }
+    /// <summary>Coché par défaut dans la liste proposée.</summary>
+    public bool Preselect { get; init; } = true;
 }
 
 /// <summary>

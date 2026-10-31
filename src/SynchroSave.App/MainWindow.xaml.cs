@@ -44,6 +44,7 @@ public partial class MainWindow : Window
         Service.ScheduleChanged += OnServiceChanged;
         AppLog.EntryAdded += OnLogEntry;
         App.StartupSettingChanged += OnStartupSettingChanged;
+        Service.CatalogChanged += OnCatalogChanged;
 
         Tabs.SelectionChanged += (_, e) =>
         {
@@ -105,6 +106,7 @@ public partial class MainWindow : Window
         Service.ScheduleChanged -= OnServiceChanged;
         AppLog.EntryAdded -= OnLogEntry;
         App.StartupSettingChanged -= OnStartupSettingChanged;
+        Service.CatalogChanged -= OnCatalogChanged;
         _statusTimer.Stop();
         base.OnClosed(e);
     }
@@ -114,6 +116,35 @@ public partial class MainWindow : Window
         StartWithWindowsCheck.IsChecked = WindowsIntegration.IsStartWithWindowsActive();
         UpdateStartupStatus();
     });
+
+    private void OnCatalogChanged() => Dispatcher.BeginInvoke(UpdateOnlineStatus);
+
+    private void UpdateOnlineStatus()
+    {
+        var info = Service.OnlineDatabase.Info;
+        OnlineStatusText.Text = !Service.OnlineDatabase.IsAvailable
+            ? "  Pas encore téléchargée (elle le sera automatiquement à la prochaine détection)."
+            : $"  {Service.Catalog.OnlineCount:N0} jeux chargés — mise à jour du {info.LastUpdateUtc?.ToLocalTime():dd/MM/yyyy}, vérifiée le {info.LastCheckUtc?.ToLocalTime():dd/MM/yyyy HH:mm}.";
+    }
+
+    private async void UpdateOnline_Click(object sender, RoutedEventArgs e)
+    {
+        UpdateOnlineButton.IsEnabled = false;
+        try
+        {
+            var progress = new Progress<string>(m => OnlineStatusText.Text = "  " + m);
+            var updated = await Service.UpdateOnlineDatabaseAsync(force: true, progress);
+            UpdateOnlineStatus();
+            if (updated && MessageBox.Show(this,
+                    $"Base de jeux en ligne à jour : {Service.Catalog.OnlineCount:N0} jeux.\n\nLancer une détection des sauvegardes maintenant ?",
+                    "SynchroSave", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                RunDetection();
+        }
+        finally
+        {
+            UpdateOnlineButton.IsEnabled = true;
+        }
+    }
 
     private void OnServiceChanged() => Dispatcher.BeginInvoke(UpdateStatus);
 
@@ -555,6 +586,9 @@ public partial class MainWindow : Window
         UpdateStartupStatus();
         StartMinimizedCheck.IsChecked = s.StartMinimized;
         NotificationsCheck.IsChecked = s.ShowNotifications;
+        OnlineDbCheck.IsChecked = s.OnlineDatabaseEnabled;
+        OnlineDaysBox.Text = s.OnlineDatabaseUpdateDays.ToString();
+        UpdateOnlineStatus();
     }
 
     private void IntervalPreset_Click(object sender, RoutedEventArgs e)
@@ -601,6 +635,11 @@ public partial class MainWindow : Window
             Warn("Le délai après modification doit être d'au moins 5 secondes.");
             return;
         }
+        if (!int.TryParse(OnlineDaysBox.Text.Trim(), out var onlineDays) || onlineDays < 1)
+        {
+            Warn("La fréquence de mise à jour de la base en ligne doit être d'au moins 1 jour.");
+            return;
+        }
         var oneDrive = OneDriveBox.Text.Trim();
         if (!Directory.Exists(oneDrive))
         {
@@ -632,7 +671,11 @@ public partial class MainWindow : Window
             s.StartWithWindows = StartWithWindowsCheck.IsChecked == true;
             s.StartMinimized = StartMinimizedCheck.IsChecked == true;
             s.ShowNotifications = NotificationsCheck.IsChecked == true;
+            s.OnlineDatabaseEnabled = OnlineDbCheck.IsChecked == true;
+            s.OnlineDatabaseUpdateDays = onlineDays;
         }
+        if (s.OnlineDatabaseEnabled) _ = Service.InitializeOnlineDatabaseAsync();
+        else Service.Catalog.SetOnlineDefinitions(Array.Empty<GameDefinition>());
         WindowsIntegration.SetStartWithWindows(s.StartWithWindows);
         Service.ApplySettings();
         LoadSettingsView();

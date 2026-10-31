@@ -25,7 +25,75 @@ public sealed class SyncService : IDisposable
         Engine = new SyncEngine(paths, States);
         Restore = new RestoreService(Engine, States, Resolver);
         Catalog = new GameCatalog(Resolver, paths.CustomGamesFile);
+        OnlineDatabase = new OnlineGameDatabase(paths);
         Settings = _store.Load();
+    }
+
+    public OnlineGameDatabase OnlineDatabase { get; }
+
+    /// <summary>Déclenché quand la base de jeux en ligne a été chargée ou mise à jour.</summary>
+    public event Action? CatalogChanged;
+
+    private readonly SemaphoreSlim _onlineLock = new(1, 1);
+
+    /// <summary>Charge la base en ligne déjà téléchargée, puis la met à jour si nécessaire (en arrière-plan).</summary>
+    public async Task InitializeOnlineDatabaseAsync()
+    {
+        if (!Settings.OnlineDatabaseEnabled) return;
+        try
+        {
+            if (OnlineDatabase.IsAvailable)
+            {
+                await Task.Run(() => Catalog.SetOnlineDefinitions(OnlineDatabase.Load())).ConfigureAwait(false);
+                CatalogChanged?.Invoke();
+            }
+            if (OnlineDatabase.IsUpdateDue(Settings.OnlineDatabaseUpdateDays))
+                await UpdateOnlineDatabaseAsync(force: false).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Warn("Base de jeux en ligne indisponible : " + ex.Message);
+        }
+    }
+
+    /// <summary>Télécharge la base en ligne si elle n'a jamais été téléchargée (avant une détection).</summary>
+    public async Task EnsureOnlineDatabaseAsync(IProgress<string>? progress = null)
+    {
+        if (!Settings.OnlineDatabaseEnabled || (OnlineDatabase.IsAvailable && Catalog.OnlineCount > 0)) return;
+        if (OnlineDatabase.IsAvailable)
+        {
+            await Task.Run(() => Catalog.SetOnlineDefinitions(OnlineDatabase.Load())).ConfigureAwait(false);
+            CatalogChanged?.Invoke();
+            return;
+        }
+        await UpdateOnlineDatabaseAsync(force: false, progress).ConfigureAwait(false);
+    }
+
+    /// <summary>Vérifie/télécharge la dernière version de la base en ligne. Ne lève pas d'exception.</summary>
+    public async Task<bool> UpdateOnlineDatabaseAsync(bool force, IProgress<string>? progress = null)
+    {
+        await _onlineLock.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            var updated = await OnlineDatabase.UpdateAsync(force, progress).ConfigureAwait(false);
+            if (updated || Catalog.OnlineCount == 0)
+            {
+                await Task.Run(() => Catalog.SetOnlineDefinitions(OnlineDatabase.Load())).ConfigureAwait(false);
+                CatalogChanged?.Invoke();
+            }
+            if (updated) AppLog.Success($"Base de jeux en ligne mise à jour : {Catalog.OnlineCount:N0} jeux avec emplacements de sauvegarde.");
+            return updated;
+        }
+        catch (Exception ex)
+        {
+            AppLog.Warn("Mise à jour de la base de jeux en ligne impossible (pas d'internet ?) : " + ex.Message);
+            progress?.Report("Base en ligne indisponible : " + ex.Message);
+            return false;
+        }
+        finally
+        {
+            _onlineLock.Release();
+        }
     }
 
     /// <summary>Verrou à prendre pour modifier <see cref="Settings"/> depuis l'interface.</summary>
@@ -79,6 +147,7 @@ public sealed class SyncService : IDisposable
     {
         Reschedule();
         RefreshWatchers();
+        _ = Task.Run(InitializeOnlineDatabaseAsync);
     }
 
     private void Reschedule()

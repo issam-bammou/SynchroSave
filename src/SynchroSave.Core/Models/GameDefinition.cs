@@ -11,4 +11,8 @@ public sealed class GameDefinition
 
     /// <summary>Si faux, le jeu n'est pas activé automatiquement lorsqu'il est détecté (dossiers génériques volumineux).</summary>
     public bool AutoEnable { get; set; } = true;
+
+    /// <summary>Origine de la définition (base intégrée, base en ligne, base perso) — non enregistrée.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string Source { get; set; } = string.Empty;
 }

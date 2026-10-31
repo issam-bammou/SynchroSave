@@ -60,7 +60,11 @@ public partial class App : Application
             args.SetObserved();
         };
 
-        Service = new SyncService(paths, new PathResolver(WindowsIntegration.BuildTokens()));
+        var tokens = WindowsIntegration.BuildTokens();
+        tokens.TryGetValue("Steam", out var steamPath);
+        // Dossiers d'installation des jeux (Steam sur tous les disques, Epic, GOG, Xbox, D:\Games…)
+        var resolver = new PathResolver(tokens, () => InstallRoots.Find(steamPath, WindowsIntegration.ExtraInstallRoots()));
+        Service = new SyncService(paths, resolver);
         var firstRun = !Service.Settings.FirstRunCompleted;
         IsFirstRun = firstRun;
         if (firstRun) FirstRunSetup();

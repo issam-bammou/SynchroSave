@@ -5,8 +5,16 @@
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
         FontFamily="Segoe UI" FontSize="13">
     <StackPanel Margin="16">
-        <TextBlock Text="Choisir un jeu connu (facultatif) :"/>
-        <ComboBox x:Name="KnownCombo" Margin="0,4,0,10" DisplayMemberPath="Name" SelectionChanged="KnownCombo_SelectionChanged" IsEditable="False"/>
+        <TextBlock Text="Choisir un jeu connu (facultatif — tapez le début du nom) :"/>
+        <ComboBox x:Name="KnownCombo" Margin="0,4,0,10" DisplayMemberPath="Name" SelectionChanged="KnownCombo_SelectionChanged"
+                  IsEditable="True" IsTextSearchEnabled="True" StaysOpenOnEdit="True"
+                  VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+            <ComboBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel/>
+                </ItemsPanelTemplate>
+            </ComboBox.ItemsPanel>
+        </ComboBox>
         <TextBlock Text="Nom du jeu :"/>
         <TextBox x:Name="NameBox" Margin="0,4,0,10"/>
         <TextBlock Text="Dossier contenant les sauvegardes :"/>
