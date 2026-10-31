@@ -62,6 +62,14 @@ Avec le [SDK .NET 8](https://dotnet.microsoft.com/download/dotnet/8.0) :
 | **Paramètres** | Dossier OneDrive, fréquence, synchro à la modification, mode, nombre de versions, démarrage avec Windows… |
 | **Journal** | Historique détaillé de ce qui a été fait. |
 
+### Lancement automatique au démarrage du PC
+
+Activé par défaut dès le premier lancement : SynchroSave démarre tout seul, réduit près de l'horloge, à chaque ouverture
+de votre session Windows (aucun droit administrateur requis). Réglable dans **Paramètres** ou par clic droit sur l'icône →
+« Lancer au démarrage de Windows ». L'onglet Paramètres indique si c'est réellement actif, y compris si le lancement a été
+désactivé dans le Gestionnaire des tâches (onglet Démarrage). Si vous déplacez le `.exe`, lancez-le une fois depuis son
+nouvel emplacement : l'entrée de démarrage est mise à jour automatiquement.
+
 Fermer la fenêtre ne quitte pas l'application : elle continue en arrière-plan (clic droit sur l'icône → Quitter).
 
 ### Ajouter des jeux à la base de détection

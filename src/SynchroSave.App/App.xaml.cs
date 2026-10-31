@@ -62,6 +62,9 @@ public partial class App : Application
         Service = new SyncService(paths, new PathResolver(WindowsIntegration.BuildTokens()));
         var firstRun = !Service.Settings.FirstRunCompleted;
         if (firstRun) FirstRunSetup();
+        else WindowsIntegration.RefreshStartupEntry(Service.Settings.StartWithWindows);
+        if (Service.Settings.StartWithWindows && WindowsIntegration.IsDisabledInTaskManager())
+            AppLog.Warn("Le lancement au démarrage est désactivé dans le Gestionnaire des tâches (onglet Démarrage). Réactivez-le dans Paramètres.");
 
         AppLog.Info($"SynchroSave démarré sur {Service.Settings.MachineName}.");
 
@@ -69,6 +72,7 @@ public partial class App : Application
         _tray.OpenRequested += ShowMainWindow;
         _tray.SyncRequested += () => _ = Service.SyncAllAsync();
         _tray.PauseToggled += () => Service.IsPaused = !Service.IsPaused;
+        _tray.StartupToggled += ToggleStartWithWindows;
         _tray.ExitRequested += ExitApplication;
 
         Service.SyncCompleted += OnSyncCompleted;
@@ -123,6 +127,18 @@ public partial class App : Application
                 (changed.Count > 4 ? $"\n... et {changed.Count - 4} autre(s)" : ""));
         }
     }
+
+    /// <summary>Bascule « Lancer au démarrage de Windows » (menu de l'icône).</summary>
+    public static void ToggleStartWithWindows()
+    {
+        var enable = !WindowsIntegration.IsStartWithWindowsActive();
+        lock (Service.Gate) Service.Settings.StartWithWindows = enable;
+        WindowsIntegration.SetStartWithWindows(enable);
+        Service.SaveSettings();
+        StartupSettingChanged?.Invoke();
+    }
+
+    public static event Action? StartupSettingChanged;
 
     public void ShowMainWindow()
     {

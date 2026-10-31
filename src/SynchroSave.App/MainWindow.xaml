@@ -190,7 +190,8 @@
                         </StackPanel>
 
                         <TextBlock Style="{StaticResource SectionTitle}" Text="Windows"/>
-                        <CheckBox x:Name="StartWithWindowsCheck" Content="Lancer SynchroSave au démarrage de Windows"/>
+                        <CheckBox x:Name="StartWithWindowsCheck" Content="Lancer SynchroSave automatiquement au démarrage du PC (à l'ouverture de votre session Windows)"/>
+                        <TextBlock x:Name="StartupStatusText" Margin="22,0,0,4" TextWrapping="Wrap"/>
                         <CheckBox x:Name="StartMinimizedCheck" Content="Démarrer réduit dans la zone de notification"/>
                         <CheckBox x:Name="NotificationsCheck" Content="Afficher des notifications après chaque synchronisation"/>
 

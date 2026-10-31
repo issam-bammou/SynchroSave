@@ -43,6 +43,7 @@ public partial class MainWindow : Window
         Service.GameSynced += OnGameSynced;
         Service.ScheduleChanged += OnServiceChanged;
         AppLog.EntryAdded += OnLogEntry;
+        App.StartupSettingChanged += OnStartupSettingChanged;
 
         Tabs.SelectionChanged += (_, e) =>
         {
@@ -92,9 +93,16 @@ public partial class MainWindow : Window
         Service.GameSynced -= OnGameSynced;
         Service.ScheduleChanged -= OnServiceChanged;
         AppLog.EntryAdded -= OnLogEntry;
+        App.StartupSettingChanged -= OnStartupSettingChanged;
         _statusTimer.Stop();
         base.OnClosed(e);
     }
+
+    private void OnStartupSettingChanged() => Dispatcher.BeginInvoke(() =>
+    {
+        StartWithWindowsCheck.IsChecked = WindowsIntegration.IsStartWithWindowsActive();
+        UpdateStartupStatus();
+    });
 
     private void OnServiceChanged() => Dispatcher.BeginInvoke(UpdateStatus);
 
@@ -532,7 +540,8 @@ public partial class MainWindow : Window
         VersionsBox.Text = s.VersionsToKeep.ToString();
         LocalBackupsBox.Text = s.LocalSafetyBackupsToKeep.ToString();
         ExcludeBox.Text = s.ExcludePatterns;
-        StartWithWindowsCheck.IsChecked = s.StartWithWindows;
+        StartWithWindowsCheck.IsChecked = s.StartWithWindows && !WindowsIntegration.IsDisabledInTaskManager();
+        UpdateStartupStatus();
         StartMinimizedCheck.IsChecked = s.StartMinimized;
         NotificationsCheck.IsChecked = s.ShowNotifications;
     }
@@ -620,6 +629,25 @@ public partial class MainWindow : Window
         _cloudLoadedOnce = false;
         AppLog.Info($"Paramètres enregistrés (synchro toutes les {FormatInterval(minutes)}, mode {(s.Mode == SyncMode.TwoWay ? "bidirectionnel" : "sauvegarde")}).");
         MessageBox.Show(this, "Paramètres enregistrés.", "SynchroSave", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void UpdateStartupStatus()
+    {
+        if (WindowsIntegration.IsStartWithWindowsActive())
+        {
+            StartupStatusText.Text = "✔ Actif : SynchroSave démarrera réduit près de l'horloge à chaque démarrage du PC.";
+            StartupStatusText.Foreground = System.Windows.Media.Brushes.SeaGreen;
+        }
+        else if (WindowsIntegration.HasRunEntry() && WindowsIntegration.IsDisabledInTaskManager())
+        {
+            StartupStatusText.Text = "⚠ Désactivé dans le Gestionnaire des tâches (onglet Démarrage). Cochez la case et enregistrez pour le réactiver.";
+            StartupStatusText.Foreground = System.Windows.Media.Brushes.DarkOrange;
+        }
+        else
+        {
+            StartupStatusText.Text = "Inactif : SynchroSave ne se lancera pas tout seul au démarrage.";
+            StartupStatusText.Foreground = (System.Windows.Media.Brush)FindResource("Subtle");
+        }
     }
 
     private void ResetSettingsView_Click(object sender, RoutedEventArgs e) => LoadSettingsView();

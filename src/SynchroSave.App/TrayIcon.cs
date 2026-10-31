@@ -9,10 +9,12 @@ internal sealed class TrayIcon : IDisposable
 {
     private readonly NotifyIcon _icon;
     private readonly ToolStripMenuItem _pauseItem;
+    private readonly ToolStripMenuItem _startupItem;
 
     public event Action? OpenRequested;
     public event Action? SyncRequested;
     public event Action? PauseToggled;
+    public event Action? StartupToggled;
     public event Action? ExitRequested;
 
     public TrayIcon()
@@ -22,10 +24,15 @@ internal sealed class TrayIcon : IDisposable
         menu.Items.Add("Synchroniser maintenant", null, (_, _) => SyncRequested?.Invoke());
         _pauseItem = new ToolStripMenuItem("Mettre en pause la synchro auto", null, (_, _) => PauseToggled?.Invoke());
         menu.Items.Add(_pauseItem);
+        _startupItem = new ToolStripMenuItem("Lancer au démarrage de Windows", null, (_, _) => StartupToggled?.Invoke());
+        menu.Items.Add(_startupItem);
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Quitter", null, (_, _) => ExitRequested?.Invoke());
         menu.Opening += (_, _) =>
+        {
             _pauseItem.Text = App.Service.IsPaused ? "Reprendre la synchro auto" : "Mettre en pause la synchro auto";
+            _startupItem.Checked = WindowsIntegration.IsStartWithWindowsActive();
+        };
 
         _icon = new NotifyIcon
         {

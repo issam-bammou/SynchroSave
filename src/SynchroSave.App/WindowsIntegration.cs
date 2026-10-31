@@ -14,18 +14,84 @@ internal static class WindowsIntegration
 
     public static string ExecutablePath => Environment.ProcessPath ?? System.IO.Path.Combine(AppContext.BaseDirectory, "SynchroSave.exe");
 
+    // Désactivation faite par l'utilisateur dans le Gestionnaire des tâches > Démarrage.
+    private const string StartupApprovedKey = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
+
+    private static string StartupCommand => $"\"{ExecutablePath}\" --minimized";
+
+    /// <summary>
+    /// Active/désactive le lancement automatique à l'ouverture de session Windows (clé Run de l'utilisateur,
+    /// sans droits administrateur). Activer lève aussi une éventuelle désactivation faite dans le Gestionnaire des tâches.
+    /// </summary>
     public static void SetStartWithWindows(bool enabled)
     {
         try
         {
             using var key = Registry.CurrentUser.OpenSubKey(RunKey, writable: true) ?? Registry.CurrentUser.CreateSubKey(RunKey);
-            if (enabled) key.SetValue(AppName, $"\"{ExecutablePath}\" --minimized");
-            else if (key.GetValue(AppName) != null) key.DeleteValue(AppName);
+            if (enabled)
+            {
+                key.SetValue(AppName, StartupCommand);
+                using var approved = Registry.CurrentUser.OpenSubKey(StartupApprovedKey, writable: true);
+                if (approved?.GetValue(AppName) != null) approved.DeleteValue(AppName);
+                AppLog.Info("Lancement au démarrage de Windows activé.");
+            }
+            else if (key.GetValue(AppName) != null)
+            {
+                key.DeleteValue(AppName);
+                AppLog.Info("Lancement au démarrage de Windows désactivé.");
+            }
         }
         catch (Exception ex)
         {
             AppLog.Error("Impossible de modifier le démarrage automatique", ex);
         }
+    }
+
+    /// <summary>
+    /// À chaque lancement : remet à jour le chemin de l'exécutable dans la clé Run (si le .exe a été déplacé),
+    /// sans passer outre une désactivation volontaire faite dans le Gestionnaire des tâches.
+    /// </summary>
+    public static void RefreshStartupEntry(bool enabled)
+    {
+        if (!enabled) return;
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(RunKey, writable: true) ?? Registry.CurrentUser.CreateSubKey(RunKey);
+            if (!string.Equals(key.GetValue(AppName) as string, StartupCommand, StringComparison.OrdinalIgnoreCase))
+            {
+                key.SetValue(AppName, StartupCommand);
+                AppLog.Info("Entrée de démarrage Windows mise à jour : " + ExecutablePath);
+            }
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error("Impossible de mettre à jour le démarrage automatique", ex);
+        }
+    }
+
+    /// <summary>Vrai si Windows lancera réellement l'application à l'ouverture de session.</summary>
+    public static bool IsStartWithWindowsActive() =>
+        HasRunEntry() && !IsDisabledInTaskManager();
+
+    public static bool HasRunEntry()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(RunKey);
+            return key?.GetValue(AppName) is string;
+        }
+        catch { return false; }
+    }
+
+    /// <summary>Le premier octet de la valeur StartupApproved vaut 0x02 (activé) ou 0x03 (désactivé).</summary>
+    public static bool IsDisabledInTaskManager()
+    {
+        try
+        {
+            using var approved = Registry.CurrentUser.OpenSubKey(StartupApprovedKey);
+            return approved?.GetValue(AppName) is byte[] { Length: > 0 } data && (data[0] & 1) == 1;
+        }
+        catch { return false; }
     }
 
     public static string? DetectOneDrive()
