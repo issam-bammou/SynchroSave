@@ -1,0 +1,322 @@
+[
+  {
+    "id": "elden-ring",
+    "name": "Elden Ring",
+    "paths": [
+      "{AppData}\\EldenRing"
+    ]
+  },
+  {
+    "id": "dark-souls-3",
+    "name": "Dark Souls III",
+    "paths": [
+      "{AppData}\\DarkSoulsIII"
+    ]
+  },
+  {
+    "id": "dark-souls-remastered",
+    "name": "Dark Souls Remastered",
+    "paths": [
+      "{Documents}\\NBGI\\DARK SOULS REMASTERED"
+    ]
+  },
+  {
+    "id": "sekiro",
+    "name": "Sekiro: Shadows Die Twice",
+    "paths": [
+      "{AppData}\\Sekiro"
+    ]
+  },
+  {
+    "id": "armored-core-6",
+    "name": "Armored Core VI",
+    "paths": [
+      "{AppData}\\ArmoredCore6"
+    ]
+  },
+  {
+    "id": "skyrim-se",
+    "name": "The Elder Scrolls V: Skyrim Special Edition",
+    "paths": [
+      "{Documents}\\My Games\\Skyrim Special Edition\\Saves"
+    ]
+  },
+  {
+    "id": "skyrim",
+    "name": "The Elder Scrolls V: Skyrim",
+    "paths": [
+      "{Documents}\\My Games\\Skyrim\\Saves"
+    ]
+  },
+  {
+    "id": "oblivion",
+    "name": "The Elder Scrolls IV: Oblivion",
+    "paths": [
+      "{Documents}\\My Games\\Oblivion\\Saves"
+    ]
+  },
+  {
+    "id": "fallout-4",
+    "name": "Fallout 4",
+    "paths": [
+      "{Documents}\\My Games\\Fallout4\\Saves"
+    ]
+  },
+  {
+    "id": "fallout-nv",
+    "name": "Fallout: New Vegas",
+    "paths": [
+      "{Documents}\\My Games\\FalloutNV\\Saves"
+    ]
+  },
+  {
+    "id": "fallout-3",
+    "name": "Fallout 3",
+    "paths": [
+      "{Documents}\\My Games\\Fallout3\\Saves"
+    ]
+  },
+  {
+    "id": "starfield",
+    "name": "Starfield",
+    "paths": [
+      "{Documents}\\My Games\\Starfield\\Saves"
+    ]
+  },
+  {
+    "id": "witcher-3",
+    "name": "The Witcher 3: Wild Hunt",
+    "paths": [
+      "{Documents}\\The Witcher 3\\gamesaves"
+    ]
+  },
+  {
+    "id": "cyberpunk-2077",
+    "name": "Cyberpunk 2077",
+    "paths": [
+      "{SavedGames}\\CD Projekt Red\\Cyberpunk 2077"
+    ]
+  },
+  {
+    "id": "baldurs-gate-3",
+    "name": "Baldur's Gate 3",
+    "paths": [
+      "{LocalAppData}\\Larian Studios\\Baldur's Gate 3\\PlayerProfiles"
+    ]
+  },
+  {
+    "id": "divinity-os2",
+    "name": "Divinity: Original Sin 2",
+    "paths": [
+      "{Documents}\\Larian Studios\\Divinity Original Sin 2 Definitive Edition\\PlayerProfiles"
+    ]
+  },
+  {
+    "id": "hollow-knight",
+    "name": "Hollow Knight",
+    "paths": [
+      "{LocalLow}\\Team Cherry\\Hollow Knight"
+    ]
+  },
+  {
+    "id": "stardew-valley",
+    "name": "Stardew Valley",
+    "paths": [
+      "{AppData}\\StardewValley\\Saves"
+    ]
+  },
+  {
+    "id": "terraria",
+    "name": "Terraria",
+    "paths": [
+      "{Documents}\\My Games\\Terraria"
+    ]
+  },
+  {
+    "id": "minecraft",
+    "name": "Minecraft (Java) - mondes",
+    "paths": [
+      "{AppData}\\.minecraft\\saves"
+    ]
+  },
+  {
+    "id": "hades",
+    "name": "Hades",
+    "paths": [
+      "{Documents}\\Saved Games\\Hades"
+    ]
+  },
+  {
+    "id": "rdr2",
+    "name": "Red Dead Redemption 2",
+    "paths": [
+      "{Documents}\\Rockstar Games\\Red Dead Redemption 2\\Profiles"
+    ]
+  },
+  {
+    "id": "gta-5",
+    "name": "Grand Theft Auto V",
+    "paths": [
+      "{Documents}\\Rockstar Games\\GTA V\\Profiles"
+    ]
+  },
+  {
+    "id": "valheim",
+    "name": "Valheim",
+    "paths": [
+      "{LocalLow}\\IronGate\\Valheim"
+    ]
+  },
+  {
+    "id": "mass-effect-le",
+    "name": "Mass Effect Legendary Edition",
+    "paths": [
+      "{Documents}\\BioWare\\Mass Effect Legendary Edition\\Save"
+    ]
+  },
+  {
+    "id": "dragon-age-inquisition",
+    "name": "Dragon Age: Inquisition",
+    "paths": [
+      "{Documents}\\BioWare\\Dragon Age Inquisition\\Save"
+    ]
+  },
+  {
+    "id": "hogwarts-legacy",
+    "name": "Hogwarts Legacy",
+    "paths": [
+      "{LocalAppData}\\Hogwarts Legacy\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "disco-elysium",
+    "name": "Disco Elysium",
+    "paths": [
+      "{LocalLow}\\ZAUM Studio\\Disco Elysium\\SaveGames"
+    ]
+  },
+  {
+    "id": "cuphead",
+    "name": "Cuphead",
+    "paths": [
+      "{AppData}\\Cuphead"
+    ]
+  },
+  {
+    "id": "sims-4",
+    "name": "Les Sims 4",
+    "paths": [
+      "{Documents}\\Electronic Arts\\Les Sims 4\\saves",
+      "{Documents}\\Electronic Arts\\The Sims 4\\saves"
+    ]
+  },
+  {
+    "id": "lies-of-p",
+    "name": "Lies of P",
+    "paths": [
+      "{LocalAppData}\\LiesofP\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "palworld",
+    "name": "Palworld",
+    "paths": [
+      "{LocalAppData}\\Pal\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "satisfactory",
+    "name": "Satisfactory",
+    "paths": [
+      "{LocalAppData}\\FactoryGame\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "rimworld",
+    "name": "RimWorld",
+    "paths": [
+      "{LocalLow}\\Ludeon Studios\\RimWorld by Ludeon Studios\\Saves"
+    ]
+  },
+  {
+    "id": "factorio",
+    "name": "Factorio",
+    "paths": [
+      "{AppData}\\Factorio\\saves"
+    ]
+  },
+  {
+    "id": "outer-wilds",
+    "name": "Outer Wilds",
+    "paths": [
+      "{LocalLow}\\Mobius Digital\\Outer Wilds"
+    ]
+  },
+  {
+    "id": "pillars-of-eternity",
+    "name": "Pillars of Eternity",
+    "paths": [
+      "{SavedGames}\\Pillars of Eternity"
+    ]
+  },
+  {
+    "id": "kingdom-come",
+    "name": "Kingdom Come: Deliverance",
+    "paths": [
+      "{SavedGames}\\kingdomcome\\saves"
+    ]
+  },
+  {
+    "id": "god-of-war",
+    "name": "God of War",
+    "paths": [
+      "{SavedGames}\\God of War"
+    ]
+  },
+  {
+    "id": "horizon-zero-dawn",
+    "name": "Horizon Zero Dawn",
+    "paths": [
+      "{Documents}\\Horizon Zero Dawn\\Saved Game"
+    ]
+  },
+  {
+    "id": "spider-man-remastered",
+    "name": "Marvel's Spider-Man Remastered",
+    "paths": [
+      "{Documents}\\Marvel's Spider-Man Remastered"
+    ]
+  },
+  {
+    "id": "ubisoft-connect",
+    "name": "Ubisoft Connect (tous les jeux Ubisoft)",
+    "paths": [
+      "{ProgramFilesX86}\\Ubisoft\\Ubisoft Game Launcher\\savegames"
+    ],
+    "autoEnable": false
+  },
+  {
+    "id": "saved-games-folder",
+    "name": "Dossier « Parties enregistrées » (Saved Games, tous les jeux)",
+    "paths": [
+      "{SavedGames}"
+    ],
+    "autoEnable": false
+  },
+  {
+    "id": "my-games-folder",
+    "name": "Dossier Documents\\My Games (tous les jeux)",
+    "paths": [
+      "{Documents}\\My Games"
+    ],
+    "autoEnable": false
+  },
+  {
+    "id": "steam-userdata",
+    "name": "Steam userdata (sauvegardes de tous les jeux Steam)",
+    "paths": [
+      "{Steam}\\userdata"
+    ],
+    "autoEnable": false
+  }
+]

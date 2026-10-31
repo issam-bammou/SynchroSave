@@ -1,0 +1,230 @@
+<Window x:Class="SynchroSave.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SynchroSave — sauvegardes de jeux vers OneDrive"
+        Icon="app.ico"
+        Width="1050" Height="680" MinWidth="820" MinHeight="520"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI" FontSize="13">
+    <DockPanel>
+        <!-- Barre d'état -->
+        <Border DockPanel.Dock="Bottom" Background="{StaticResource Panel}" BorderBrush="#E1DFDD" BorderThickness="0,1,0,0" Padding="12,6">
+            <DockPanel>
+                <Button x:Name="PauseButton" DockPanel.Dock="Right" Margin="0" Padding="10,2" MinHeight="24" Click="Pause_Click" Content="Pause"/>
+                <TextBlock x:Name="StatusText" VerticalAlignment="Center" Foreground="{StaticResource Subtle}" Text="Prêt."/>
+            </DockPanel>
+        </Border>
+
+        <!-- En-tête -->
+        <Border DockPanel.Dock="Top" Background="{StaticResource Accent}" Padding="18,12">
+            <DockPanel>
+                <Button x:Name="SyncAllButton" DockPanel.Dock="Right" Margin="0" Padding="16,6" FontWeight="SemiBold"
+                        Click="SyncAll_Click" Content="⟳  Synchroniser maintenant"/>
+                <StackPanel>
+                    <TextBlock Text="SynchroSave" Foreground="White" FontSize="22" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="HeaderSubtitle" Foreground="#DDEEFF" Text="Vos sauvegardes de jeux, à jour dans OneDrive."/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <TabControl x:Name="Tabs" Margin="10" Padding="10">
+            <!-- ============ MES JEUX ============ -->
+            <TabItem Header="  Mes jeux  ">
+                <DockPanel>
+                    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <Button Click="Detect_Click" Content="🔍 Détecter les jeux"/>
+                        <Button Click="AddGame_Click" Content="➕ Ajouter un jeu / dossier"/>
+                        <Button Click="EditGame_Click" Content="✎ Modifier"/>
+                        <Button Click="RemoveGame_Click" Content="🗑 Retirer de la liste"/>
+                        <Button Click="SyncSelected_Click" Content="⟳ Synchroniser la sélection"/>
+                        <Button Click="OpenLocal_Click" Content="📂 Dossier local"/>
+                        <Button Click="OpenCloud_Click" Content="☁ Dossier OneDrive"/>
+                    </WrapPanel>
+                    <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Hint}"
+                               Text="Cochez les jeux à synchroniser. Ils sont envoyés automatiquement vers OneDrive selon la fréquence choisie dans Paramètres, et dès qu'une sauvegarde change."/>
+                    <DataGrid x:Name="GamesGrid" MouseDoubleClick="GamesGrid_DoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Synchro" Width="70">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox HorizontalAlignment="Center" IsChecked="{Binding Enabled, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Jeu" Binding="{Binding Name}" Width="230" IsReadOnly="True" FontWeight="SemiBold"/>
+                            <DataGridTextColumn Header="Dossier de sauvegarde" Binding="{Binding LocalPath}" Width="*" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Dernière synchro" Binding="{Binding LastSyncText}" Width="130" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="État" Binding="{Binding Status}" Width="260" IsReadOnly="True">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="ToolTip" Value="{Binding Status}"/>
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <!-- ============ RESTAURER ============ -->
+            <TabItem x:Name="RestoreTab" Header="  Restaurer depuis OneDrive  ">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Style="{StaticResource Hint}"
+                               Text="Sauvegardes présentes dans votre OneDrive (envoyées depuis n'importe lequel de vos PC). Cochez celles à récupérer sur ce PC, vérifiez le dossier de destination puis cliquez sur « Restaurer la sélection ». Le contenu local actuel est d'abord sauvegardé en zip par sécurité."/>
+                    <WrapPanel Grid.Row="1" Margin="0,0,0,8">
+                        <Button Click="RefreshCloud_Click" Content="⟳ Actualiser la liste"/>
+                        <Button Click="SelectAllCloud_Click" Content="☑ Tout cocher"/>
+                        <Button Click="SelectNoneCloud_Click" Content="☐ Tout décocher"/>
+                        <Button Click="ChangeTarget_Click" Content="📂 Changer la destination…"/>
+                        <Button Style="{StaticResource PrimaryButton}" Click="RestoreSelected_Click" Content="⬇ Restaurer la sélection"/>
+                        <Button Click="DeleteCloud_Click" Content="🗑 Supprimer de OneDrive"/>
+                    </WrapPanel>
+                    <DataGrid Grid.Row="2" x:Name="CloudGrid" SelectionMode="Single" SelectionChanged="CloudGrid_SelectionChanged">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Récupérer" Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox HorizontalAlignment="Center" IsChecked="{Binding Selected, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Jeu" Binding="{Binding Name}" Width="220" IsReadOnly="True" FontWeight="SemiBold"/>
+                            <DataGridTextColumn Header="Sauvegardé le" Binding="{Binding UpdatedText}" Width="125" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Depuis le PC" Binding="{Binding SourceMachine}" Width="120" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Taille" Binding="{Binding SizeText}" Width="80" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Sur ce PC" Binding="{Binding LocalState}" Width="120" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Destination sur ce PC" Binding="{Binding TargetPath, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock Grid.Row="3" Style="{StaticResource SectionTitle}" x:Name="VersionsTitle" Text="Versions disponibles (sélectionnez un jeu)"/>
+                    <DockPanel Grid.Row="4">
+                        <StackPanel DockPanel.Dock="Right" Margin="10,0,0,0">
+                            <Button Click="RestoreVersion_Click" Content="⬇ Restaurer cette version" Margin="0,0,0,8"/>
+                            <TextBlock Style="{StaticResource Hint}" Width="190"
+                                       Text="Une ancienne version restaurée deviendra la version courante dans OneDrive à la prochaine synchro (la version actuelle reste dans l'historique)."/>
+                        </StackPanel>
+                        <ListBox x:Name="VersionsList" DisplayMemberPath="DisplayName"/>
+                    </DockPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- ============ PARAMÈTRES ============ -->
+            <TabItem Header="  Paramètres  ">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="4" MaxWidth="820" HorizontalAlignment="Left">
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="OneDrive" Margin="0,0,0,6"/>
+                        <TextBlock Style="{StaticResource Hint}" Text="Dossier OneDrive de ce PC (le client OneDrive de Windows doit être connecté à votre compte). Les sauvegardes sont copiées dans un sous-dossier puis envoyées dans le cloud par OneDrive."/>
+                        <DockPanel Margin="0,0,0,6">
+                            <Button DockPanel.Dock="Right" Click="DetectOneDrive_Click" Content="Détecter" Margin="8,0,0,0"/>
+                            <Button DockPanel.Dock="Right" Click="BrowseOneDrive_Click" Content="Parcourir…" Margin="8,0,0,0"/>
+                            <TextBox x:Name="OneDriveBox"/>
+                        </DockPanel>
+                        <Grid Margin="0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="260"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Nom du dossier dans OneDrive :" VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="1" x:Name="CloudFolderBox" Width="220" HorizontalAlignment="Left" Margin="0,3"/>
+                            <TextBlock Grid.Row="1" Text="Nom de ce PC (affiché dans OneDrive) :" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="MachineBox" Width="220" HorizontalAlignment="Left" Margin="0,3"/>
+                        </Grid>
+
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Synchronisation automatique"/>
+                        <CheckBox x:Name="AutoSyncCheck" Content="Synchroniser automatiquement"/>
+                        <StackPanel Orientation="Horizontal" Margin="22,4,0,4">
+                            <TextBlock Text="Fréquence : toutes les" VerticalAlignment="Center"/>
+                            <TextBox x:Name="IntervalBox" Width="60" Margin="8,0" HorizontalContentAlignment="Right"/>
+                            <ComboBox x:Name="IntervalUnitCombo" Width="100" SelectedIndex="0">
+                                <ComboBoxItem Content="minutes"/>
+                                <ComboBoxItem Content="heures"/>
+                            </ComboBox>
+                            <TextBlock Text="   Raccourcis :" VerticalAlignment="Center" Foreground="{StaticResource Subtle}"/>
+                            <Button Content="5 min" Tag="5" Click="IntervalPreset_Click" Margin="6,0,0,0" Padding="8,2" MinHeight="24"/>
+                            <Button Content="15 min" Tag="15" Click="IntervalPreset_Click" Margin="6,0,0,0" Padding="8,2" MinHeight="24"/>
+                            <Button Content="30 min" Tag="30" Click="IntervalPreset_Click" Margin="6,0,0,0" Padding="8,2" MinHeight="24"/>
+                            <Button Content="1 h" Tag="60" Click="IntervalPreset_Click" Margin="6,0,0,0" Padding="8,2" MinHeight="24"/>
+                            <Button Content="6 h" Tag="360" Click="IntervalPreset_Click" Margin="6,0,0,0" Padding="8,2" MinHeight="24"/>
+                            <Button Content="24 h" Tag="1440" Click="IntervalPreset_Click" Margin="6,0,0,0" Padding="8,2" MinHeight="24"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox x:Name="SyncOnChangeCheck" Content="Synchroniser aussi dès qu'une sauvegarde est modifiée, après"/>
+                            <TextBox x:Name="ChangeDelayBox" Width="50" Margin="8,0" HorizontalContentAlignment="Right"/>
+                            <TextBlock Text="secondes sans nouvelle modification" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <CheckBox x:Name="SyncOnStartupCheck" Content="Synchroniser au démarrage de l'application"/>
+
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Mode de synchronisation"/>
+                        <RadioButton x:Name="ModeBackupRadio" GroupName="Mode">
+                            <TextBlock TextWrapping="Wrap"><Bold>Sauvegarde (recommandé)</Bold> : ce PC envoie ses sauvegardes vers OneDrive. Pour récupérer sur ce PC une sauvegarde faite ailleurs, utilisez l'onglet « Restaurer ».</TextBlock>
+                        </RadioButton>
+                        <RadioButton x:Name="ModeTwoWayRadio" GroupName="Mode">
+                            <TextBlock TextWrapping="Wrap"><Bold>Bidirectionnel</Bold> : si un autre PC a envoyé une version plus récente, elle est automatiquement récupérée sur ce PC (en cas de conflit, la plus récente gagne et l'autre est archivée).</TextBlock>
+                        </RadioButton>
+
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Historique et sécurité"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Text="Anciennes versions conservées dans OneDrive par jeu :" VerticalAlignment="Center" Width="360"/>
+                            <TextBox x:Name="VersionsBox" Width="60" HorizontalContentAlignment="Right"/>
+                            <TextBlock Text="  (0 = désactivé)" VerticalAlignment="Center" Foreground="{StaticResource Subtle}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Text="Copies de sécurité locales avant restauration, par jeu :" VerticalAlignment="Center" Width="360"/>
+                            <TextBox x:Name="LocalBackupsBox" Width="60" HorizontalContentAlignment="Right"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Text="Fichiers ignorés (séparés par ;) :" VerticalAlignment="Center" Width="360"/>
+                            <TextBox x:Name="ExcludeBox" Width="360"/>
+                        </StackPanel>
+
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Windows"/>
+                        <CheckBox x:Name="StartWithWindowsCheck" Content="Lancer SynchroSave au démarrage de Windows"/>
+                        <CheckBox x:Name="StartMinimizedCheck" Content="Démarrer réduit dans la zone de notification"/>
+                        <CheckBox x:Name="NotificationsCheck" Content="Afficher des notifications après chaque synchronisation"/>
+
+                        <WrapPanel Margin="0,18,0,8">
+                            <Button Style="{StaticResource PrimaryButton}" Click="SaveSettings_Click" Content="💾 Enregistrer les paramètres"/>
+                            <Button Click="ResetSettingsView_Click" Content="Annuler les modifications"/>
+                        </WrapPanel>
+                        <WrapPanel Margin="0,4,0,8">
+                            <Button Click="OpenCloudRoot_Click" Content="☁ Ouvrir le dossier SynchroSave dans OneDrive"/>
+                            <Button Click="OpenLocalBackups_Click" Content="🛟 Copies de sécurité locales"/>
+                            <Button Click="OpenDataFolder_Click" Content="⚙ Dossier de l'application"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ============ JOURNAL ============ -->
+            <TabItem Header="  Journal  ">
+                <DockPanel>
+                    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Button Click="ClearLog_Click" Content="Effacer l'affichage"/>
+                        <Button Click="OpenLogFile_Click" Content="📄 Ouvrir le fichier journal"/>
+                    </WrapPanel>
+                    <ListView x:Name="LogList">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Heure" Width="140" DisplayMemberBinding="{Binding Time, StringFormat=dd/MM HH:mm:ss}"/>
+                                <GridViewColumn Header="Niveau" Width="80" DisplayMemberBinding="{Binding LevelText}"/>
+                                <GridViewColumn Header="Message" Width="720" DisplayMemberBinding="{Binding Message}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>
