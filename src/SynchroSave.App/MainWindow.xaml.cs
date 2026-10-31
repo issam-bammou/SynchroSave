@@ -55,6 +55,17 @@ public partial class MainWindow : Window
         _statusTimer.Start();
         UpdateStatus();
 
+        if (App.IsFirstRun)
+        {
+            // Premier lancement : on propose tout de suite les sauvegardes trouvées par analyse.
+            ContentRendered += (_, _) =>
+            {
+                if (!App.IsFirstRun) return;
+                App.IsFirstRun = false;
+                RunDetection();
+            };
+        }
+
         if (string.IsNullOrWhiteSpace(Service.Settings.OneDriveRoot))
         {
             Loaded += (_, _) =>
@@ -215,17 +226,17 @@ public partial class MainWindow : Window
         await Service.SyncAllAsync(onlyIds: sel.Select(g => g.Id));
     }
 
-    private void Detect_Click(object sender, RoutedEventArgs e)
+    private void Detect_Click(object sender, RoutedEventArgs e) => RunDetection();
+
+    /// <summary>Ouvre la fenêtre de détection (jeux connus + analyse des dossiers AppData, Documents…).</summary>
+    public void RunDetection()
     {
-        List<GameEntry> added;
-        lock (Service.Gate) added = Service.Catalog.MergeDetected(Service.Settings);
+        var dlg = new DetectWindow { Owner = this };
+        if (dlg.ShowDialog() != true || dlg.Added.Count == 0) return;
         Service.ApplySettings();
         RefreshGames();
-        MessageBox.Show(this,
-            added.Count == 0
-                ? "Aucun nouveau jeu détecté.\n\nSi un jeu manque, utilisez « Ajouter un jeu / dossier » pour indiquer son dossier de sauvegarde."
-                : $"{added.Count} nouveau(x) jeu(x) détecté(s) :\n\n" + string.Join("\n", added.Select(a => "• " + a.Name + (a.Enabled ? "" : "  (non coché par défaut)"))),
-            "Détection des jeux", MessageBoxButton.OK, MessageBoxImage.Information);
+        AppLog.Success($"{dlg.Added.Count} jeu(x) ajouté(s) : {string.Join(", ", dlg.Added.Select(a => a.Name))}.");
+        _ = Service.SyncAllAsync(onlyIds: dlg.Added.Select(a => a.Id));
     }
 
     private void AddGame_Click(object sender, RoutedEventArgs e)

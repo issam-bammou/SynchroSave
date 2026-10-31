@@ -20,6 +20,7 @@ public partial class App : Application
 
     public static SyncService Service { get; private set; } = null!;
     public static bool IsExiting { get; private set; }
+    public static bool IsFirstRun { get; set; }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -61,6 +62,7 @@ public partial class App : Application
 
         Service = new SyncService(paths, new PathResolver(WindowsIntegration.BuildTokens()));
         var firstRun = !Service.Settings.FirstRunCompleted;
+        IsFirstRun = firstRun;
         if (firstRun) FirstRunSetup();
         else WindowsIntegration.RefreshStartupEntry(Service.Settings.StartWithWindows);
         if (Service.Settings.StartWithWindows && WindowsIntegration.IsDisabledInTaskManager())

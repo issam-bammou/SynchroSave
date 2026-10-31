@@ -318,5 +318,185 @@
       "{Steam}\\userdata"
     ],
     "autoEnable": false
+  },
+  {
+    "id": "ea-fc-27",
+    "name": "EA SPORTS FC 27",
+    "paths": [
+      "{LocalAppData}\\EA SPORTS FC 27\\settings",
+      "{Documents}\\EA SPORTS FC 27\\settings"
+    ]
+  },
+  {
+    "id": "ea-fc-26",
+    "name": "EA SPORTS FC 26",
+    "paths": [
+      "{LocalAppData}\\EA SPORTS FC 26\\settings",
+      "{Documents}\\EA SPORTS FC 26\\settings"
+    ]
+  },
+  {
+    "id": "ea-fc-25",
+    "name": "EA SPORTS FC 25",
+    "paths": [
+      "{LocalAppData}\\EA SPORTS FC 25\\settings",
+      "{Documents}\\EA SPORTS FC 25\\settings"
+    ]
+  },
+  {
+    "id": "ea-fc-24",
+    "name": "EA SPORTS FC 24",
+    "paths": [
+      "{LocalAppData}\\EA SPORTS FC 24\\settings",
+      "{Documents}\\EA SPORTS FC 24\\settings"
+    ]
+  },
+  {
+    "id": "fifa-23",
+    "name": "FIFA 23",
+    "paths": [
+      "{Documents}\\FIFA 23\\settings"
+    ]
+  },
+  {
+    "id": "mortal-shell-2",
+    "name": "Mortal Shell 2",
+    "paths": [
+      "{LocalAppData}\\MortalShell2\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "mortal-shell",
+    "name": "Mortal Shell",
+    "paths": [
+      "{LocalAppData}\\DungeonRPG\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "stalker-2",
+    "name": "S.T.A.L.K.E.R. 2",
+    "paths": [
+      "{LocalAppData}\\Stalker2\\Saved\\STEAM\\SaveGames",
+      "{LocalAppData}\\Stalker2\\Saved"
+    ]
+  },
+  {
+    "id": "ready-or-not",
+    "name": "Ready or Not",
+    "paths": [
+      "{LocalAppData}\\ReadyOrNot\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "hellblade-2",
+    "name": "Senua's Saga: Hellblade II",
+    "paths": [
+      "{LocalAppData}\\Hellblade2\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "remnant-2",
+    "name": "Remnant II",
+    "paths": [
+      "{SavedGames}\\Remnant2"
+    ]
+  },
+  {
+    "id": "grounded",
+    "name": "Grounded",
+    "paths": [
+      "{LocalAppData}\\Grounded\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "the-forest",
+    "name": "The Forest",
+    "paths": [
+      "{LocalLow}\\SKS\\TheForest"
+    ]
+  },
+  {
+    "id": "sons-of-the-forest",
+    "name": "Sons of the Forest",
+    "paths": [
+      "{LocalLow}\\Endnight\\SonsOfTheForest\\Saves"
+    ]
+  },
+  {
+    "id": "subnautica-below-zero",
+    "name": "Subnautica: Below Zero",
+    "paths": [
+      "{LocalLow}\\Unknown Worlds\\Subnautica Below Zero"
+    ]
+  },
+  {
+    "id": "enshrouded",
+    "name": "Enshrouded",
+    "paths": [
+      "{SavedGames}\\Enshrouded"
+    ]
+  },
+  {
+    "id": "manor-lords",
+    "name": "Manor Lords",
+    "paths": [
+      "{LocalAppData}\\ManorLords\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "atomic-heart",
+    "name": "Atomic Heart",
+    "paths": [
+      "{LocalAppData}\\AtomicHeart\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "the-outer-worlds",
+    "name": "The Outer Worlds",
+    "paths": [
+      "{SavedGames}\\The Outer Worlds"
+    ]
+  },
+  {
+    "id": "jedi-survivor",
+    "name": "Star Wars Jedi: Survivor",
+    "paths": [
+      "{LocalAppData}\\Respawn\\JediSurvivor\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "jedi-fallen-order",
+    "name": "Star Wars Jedi: Fallen Order",
+    "paths": [
+      "{LocalAppData}\\SwGame\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "stray",
+    "name": "Stray",
+    "paths": [
+      "{LocalAppData}\\Hk_project\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "tekken-8",
+    "name": "Tekken 8",
+    "paths": [
+      "{LocalAppData}\\TEKKEN 8\\Saved\\SaveGames"
+    ]
+  },
+  {
+    "id": "street-fighter-6",
+    "name": "Street Fighter 6",
+    "paths": [
+      "{Steam}\\userdata\\*\\1364780\\remote"
+    ]
+  },
+  {
+    "id": "elden-ring-nightreign",
+    "name": "Elden Ring Nightreign",
+    "paths": [
+      "{AppData}\\Nightreign"
+    ]
   }
 ]

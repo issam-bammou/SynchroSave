@@ -68,3 +68,79 @@ public sealed class PathAndCatalogTests : IDisposable
         Assert.Equal("conflit", v.Reason);
     }
 }
+
+public sealed class SaveFolderScannerTests : IDisposable
+{
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "ssync-scan-" + Guid.NewGuid().ToString("N"));
+    public SaveFolderScannerTests() => Directory.CreateDirectory(_root);
+    public void Dispose() { try { Directory.Delete(_root, true); } catch { } }
+
+    private string Local => Path.Combine(_root, "AppData", "Local");
+    private string Docs => Path.Combine(_root, "Documents");
+
+    private PathResolver Resolver() => new(new Dictionary<string, string>
+    {
+        ["UserProfile"] = _root,
+        ["LocalAppData"] = Local,
+        ["AppData"] = Path.Combine(_root, "AppData", "Roaming"),
+        ["LocalLow"] = Path.Combine(_root, "AppData", "LocalLow"),
+        ["Documents"] = Docs,
+        ["SavedGames"] = Path.Combine(_root, "Saved Games"),
+    });
+
+    private static void Touch(string path, string content = "data")
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, content);
+    }
+
+    [Fact]
+    public void Finds_unreal_and_named_save_folders_and_skips_noise()
+    {
+        Touch(Path.Combine(Local, "MortalShell2", "Saved", "SaveGames", "slot0.sav"));
+        Touch(Path.Combine(Local, "MortalShell2", "Saved", "Logs", "game.log"));
+        Touch(Path.Combine(Local, "SomeIndie", "profile1.sl2"));
+        Touch(Path.Combine(Docs, "My Games", "CoolGame", "Saves", "a.dat"));
+        Touch(Path.Combine(_root, "AppData", "LocalLow", "Studio", "LowGame", "save.es3"));
+        Touch(Path.Combine(Local, "Google", "Chrome", "Saves", "x.sav")); // exclu
+        Touch(Path.Combine(Local, "FortniteGame", "Saved", "Config", "x.ini")); // pas de sauvegarde
+        Directory.CreateDirectory(Path.Combine(Local, "EmptyGame", "Saved", "SaveGames")); // vide
+
+        var found = new SaveFolderScanner(Resolver()).Scan();
+        var names = found.Select(f => f.Name).ToList();
+
+        Assert.Contains("Mortal Shell 2", names);
+        Assert.Contains("Some Indie", names);
+        Assert.Contains("Cool Game", names);
+        Assert.Contains("Low Game", names);
+        Assert.DoesNotContain(found, f => f.Path.Contains("Google"));
+        Assert.DoesNotContain(found, f => f.Path.Contains("FortniteGame"));
+        Assert.DoesNotContain(found, f => f.Path.Contains("EmptyGame"));
+        Assert.Single(found, f => f.Name == "Mortal Shell 2");
+        Assert.Equal("{LocalAppData}" + Path.DirectorySeparatorChar + Path.Combine("MortalShell2", "Saved", "SaveGames"),
+            found.Single(f => f.Name == "Mortal Shell 2").Template);
+    }
+
+    [Fact]
+    public void Candidates_exclude_tracked_and_known_games()
+    {
+        Touch(Path.Combine(Local, "EA SPORTS FC 26", "settings", "Career-20261001.sav"));
+        Touch(Path.Combine(Local, "Tracked", "Saved", "SaveGames", "s.sav"));
+        Touch(Path.Combine(Local, "NewOne", "Saved", "SaveGames", "s.sav"));
+
+        var r = Resolver();
+        var catalog = new GameCatalog(r);
+        var settings = new SynchroSave.Core.Models.AppSettings();
+        settings.Games.Add(new SynchroSave.Core.Models.GameEntry { Id = "t", Name = "Tracked", LocalPath = Path.Combine(Local, "Tracked") });
+
+        var c = catalog.FindNewCandidates(settings);
+        Assert.Single(c, x => x.KnownGameId == "ea-fc-26");
+        Assert.Single(c, x => x.Name == "New One");
+        Assert.DoesNotContain(c, x => x.Path.Contains("Tracked"));
+        Assert.DoesNotContain(c, x => x.KnownGameId == null && x.Path.Contains("EA SPORTS"));
+
+        var added = catalog.AddCandidates(c, settings);
+        Assert.Equal(c.Count, added.Count);
+        Assert.Empty(catalog.FindNewCandidates(settings));
+    }
+}

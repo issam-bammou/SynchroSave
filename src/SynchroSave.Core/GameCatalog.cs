@@ -88,6 +88,68 @@ public sealed class GameCatalog
         return added;
     }
 
+    /// <summary>
+    /// Recherche complète : jeux connus de la base + analyse heuristique des dossiers (AppData, Documents...).
+    /// Ne renvoie que ce qui n'est pas encore suivi.
+    /// </summary>
+    public List<SaveCandidate> FindNewCandidates(AppSettings settings, CancellationToken ct = default)
+    {
+        var tracked = settings.Games.ToList();
+        var result = new List<SaveCandidate>();
+
+        foreach (var d in Detect())
+        {
+            if (tracked.Any(g => g.Id.Equals(d.Definition.Id, StringComparison.OrdinalIgnoreCase))) continue;
+            if (SaveFolderScanner.IsAlreadyTracked(d.LocalPath, tracked)) continue;
+            var files = FileScanner.Scan(d.LocalPath);
+            result.Add(new SaveCandidate
+            {
+                Name = d.Definition.Name,
+                Path = d.LocalPath,
+                Template = d.PathTemplate,
+                Reason = d.Definition.AutoEnable ? "Jeu connu" : "Dossier global (volumineux)",
+                KnownGameId = d.Definition.Id,
+                FileCount = files.Count,
+                Size = files.Sum(f => f.Size),
+                LastWriteUtc = files.Count == 0 ? null : files.Max(f => f.LastWriteUtc),
+            });
+        }
+
+        var known = result.ToList();
+        foreach (var c in new SaveFolderScanner(_resolver).Scan(ct: ct))
+        {
+            if (SaveFolderScanner.IsAlreadyTracked(c.Path, tracked)) continue;
+            // Déjà couvert par un jeu connu détecté ?
+            if (known.Any(k => SaveFolderScanner.IsAlreadyTracked(c.Path, new[] { new GameEntry { LocalPath = k.Path } }))) continue;
+            result.Add(c);
+        }
+        return result;
+    }
+
+    /// <summary>Ajoute les candidats choisis par l'utilisateur à la liste des jeux suivis.</summary>
+    public List<GameEntry> AddCandidates(IEnumerable<SaveCandidate> candidates, AppSettings settings)
+    {
+        var added = new List<GameEntry>();
+        foreach (var c in candidates)
+        {
+            GameEntry entry;
+            if (c.KnownGameId != null)
+            {
+                if (settings.Games.Any(g => g.Id == c.KnownGameId)) continue;
+                entry = new GameEntry { Id = c.KnownGameId, Name = c.Name, LocalPath = c.Path, PathTemplate = c.Template, LastStatus = "Détecté" };
+                settings.Games.Add(entry);
+            }
+            else
+            {
+                entry = CreateCustom(string.IsNullOrWhiteSpace(c.Name) ? System.IO.Path.GetFileName(c.Path) : c.Name.Trim(), c.Path, settings);
+                entry.LastStatus = "Détecté";
+            }
+            entry.Enabled = true;
+            added.Add(entry);
+        }
+        return added;
+    }
+
     /// <summary>Crée une entrée pour un dossier choisi manuellement.</summary>
     public GameEntry CreateCustom(string name, string folder, AppSettings settings)
     {

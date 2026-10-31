@@ -5,8 +5,13 @@ et permet de **les récupérer en quelques clics sur un autre PC**.
 
 ## Fonctionnalités
 
-- **Détection automatique** des jeux installés (Elden Ring, Skyrim, Witcher 3, Cyberpunk 2077, Baldur's Gate 3,
-  Stardew Valley, Hollow Knight, Minecraft, RDR2, Hogwarts Legacy… ~45 entrées) + ajout de **n'importe quel dossier** à la main.
+- **Détection automatique** en deux temps :
+  - une base de ~70 jeux connus (Elden Ring, Skyrim, Witcher 3, Cyberpunk 2077, Baldur's Gate 3, EA SPORTS FC 24–27,
+    Stardew Valley, Hollow Knight, Minecraft, RDR2, Hogwarts Legacy…) ;
+  - une **analyse des dossiers** `AppData\Local`, `Roaming`, `LocalLow`, `Documents`, `My Games` et `Saved Games` qui repère
+    les sauvegardes des jeux absents de la base : schéma Unreal Engine `<Jeu>\Saved\SaveGames`, dossiers `Saves`, `SaveData`…,
+    fichiers `.sav`, `.sl2`, `.ess`, `.es3`… Les dossiers trouvés sont proposés dans une liste à cocher (nom modifiable).
+  - et l'ajout de **n'importe quel dossier** à la main.
 - **Synchro automatique PC → OneDrive** avec une **fréquence réglable** (de 1 minute à 24 heures, raccourcis 5 min / 15 min / 30 min / 1 h / 6 h / 24 h).
 - **Synchro dès qu'une sauvegarde change** (après un délai réglable sans nouvelle écriture, pour attendre la fin de la sauvegarde du jeu).
 - **Restauration sur un nouveau PC** : l'onglet « Restaurer depuis OneDrive » liste toutes les sauvegardes présentes dans OneDrive
